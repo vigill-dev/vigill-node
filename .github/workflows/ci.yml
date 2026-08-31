@@ -1,0 +1,24 @@
+# Build and test on every push and PR.
+#
+# These SDKs live outside the vigil monorepo, so nothing in that repo can fail when one of
+# them breaks. This workflow is the only thing watching them.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test

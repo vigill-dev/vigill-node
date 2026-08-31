@@ -1,0 +1,65 @@
+# Publish to npm on a version tag.
+#
+#   npm version patch && git push --follow-tags
+#
+# The tag is the trigger and the source of truth: the run fails if it disagrees with
+# package.json, because a tag that says v0.2.0 over a package that says 0.1.0 publishes the
+# wrong thing under the right name and there is no taking it back.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write   # cut the GitHub Release
+  id-token: write   # OIDC — provenance attestation, and trusted publishing once configured
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+
+      # Node 22 bundles npm 10.x. Provenance and OIDC trusted publishing both need >= 11.5.1,
+      # so the bundled npm is not good enough even though the Node version is.
+      - name: Upgrade npm for provenance + OIDC
+        run: npm install -g npm@latest
+
+      - run: npm ci
+
+      - name: Tag must match package.json
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::tag v$TAG does not match package.json $PKG"
+            exit 1
+          fi
+          echo "publishing $PKG"
+
+      - run: npm run typecheck
+      - run: npm test
+
+      # `prepublishOnly` runs the build, so dist/ is produced here rather than committed.
+      # NODE_AUTH_TOKEN covers the first publish only: npm cannot attach a trusted publisher
+      # to a package that does not exist yet. Once the package is on the registry and OIDC is
+      # configured, delete the `env:` block below and the token — publishing keeps working.
+      - name: Publish
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
