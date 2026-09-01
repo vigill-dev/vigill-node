@@ -1,4 +1,4 @@
-# @vigill/node
+# @vigill.dev/node
 
 Plain-English production error monitoring for Node.js servers — the Vigil Node SDK (Core B).
 
@@ -9,11 +9,11 @@ Vigil turns crashes into **what broke / who's affected / is it costing money / h
 ## Install
 
 ```bash
-npm install @vigill/node
+npm install @vigill.dev/node
 ```
 
 ```js
-import { init, captureError } from '@vigill/node';
+import { init, captureError } from '@vigill.dev/node';
 
 init({ key: 'vg_pub_your_public_key' });
 

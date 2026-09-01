@@ -1,5 +1,5 @@
 {
-  "name": "@vigill/node",
+  "name": "@vigill.dev/node",
   "version": "0.1.0",
   "description": "Plain-English production error monitoring for Node.js servers — the Vigil Node SDK.",
   "type": "module",
@@ -40,10 +40,10 @@
   "homepage": "https://vigill.dev",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vigill-dev/vigil-node.git"
+    "url": "git+https://github.com/vigill-dev/vigill-node.git"
   },
   "bugs": {
-    "url": "https://github.com/vigill-dev/vigil-node/issues"
+    "url": "https://github.com/vigill-dev/vigill-node/issues"
   },
   "publishConfig": {
     "access": "public"
